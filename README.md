@@ -1,1 +1,4 @@
+The purpose of this program is to determine how many unique players and how many unique colleges appear in the NFL Combine dataset. It provides a high-level summary of the dataset’s diversity in terms of participants and institutions.
+The program takes a CSV file containing combine data as input, normalizes player names and college names to ensure consistent uniqueness, and counts distinct entries using sets. It outputs these results to a new CSV file with two metrics—unique_players and unique_colleges—along with their counts.
+The main function reads the CSV using csv.DictReader, extracts player names (preferring full name, then first/last) and college fields, normalizes text for reliable comparison, and stores unique values in sets. After counting, it writes the results to an output CSV and the main block handles default paths, optional command-line arguments, and prints a confirmation message.
 # discussion
