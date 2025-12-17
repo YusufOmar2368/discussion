@@ -1,0 +1,69 @@
+#!/usr/bin/env python3
+"""
+Count unique players and colleges from combine.csv and write results to CSV.
+"""
+import csv
+import os
+import sys
+from typing import Optional
+
+DEFAULT = "/Users/yomar/Downloads/combine.csv"
+
+def _normalize(s: Optional[str]) -> Optional[str]:
+    if s is None:
+        return None
+    v = str(s).strip()
+    if not v:
+        return None
+    # collapse whitespace and lowercase for stable uniqueness
+    return " ".join(v.split()).lower()
+
+def count_unique_players_colleges(csv_path: str = DEFAULT, out_path: Optional[str] = None) -> str:
+    if not os.path.isfile(csv_path):
+        raise FileNotFoundError(csv_path)
+    if out_path is None:
+        out_path = "/Users/yomar/Downloads/unique_counts.csv"
+
+    players = set()
+    colleges = set()
+
+    with open(csv_path, newline="", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            # player name: prefer nameFull, fall back to first+last
+            name = row.get("nameFull") or ""
+            if not name:
+                name = (row.get("nameFirst") or "") + " " + (row.get("nameLast") or "")
+            name_n = _normalize(name)
+            if name_n:
+                players.add(name_n)
+
+            # college: try common column names
+            college = None
+            for key in ("college", "collegeId", "team", "school"):
+                val = row.get(key)
+                if val not in (None, ""):
+                    college = val
+                    break
+            college_n = _normalize(college)
+            if college_n:
+                colleges.add(college_n)
+
+    counts = {
+        "unique_players": len(players),
+        "unique_colleges": len(colleges),
+    }
+
+    with open(out_path, "w", newline="", encoding="utf-8") as out:
+        writer = csv.writer(out)
+        writer.writerow(["metric", "count"])
+        for k, v in counts.items():
+            writer.writerow([k, v])
+
+    return out_path
+
+if __name__ == "__main__":
+    inp = sys.argv[1] if len(sys.argv) > 1 else DEFAULT
+    outp = sys.argv[2] if len(sys.argv) > 2 else None
+    path = count_unique_players_colleges(inp, outp)
+    print(f"Wrote unique counts to {path}")
